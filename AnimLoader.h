@@ -29,7 +29,6 @@
 static class AnimLoader
 {
 public:
-	typedef int Hash;
 	struct Int2
 	{
 		Int2() {}
@@ -53,18 +52,15 @@ public:
 		Int2 RowsCols;
 		Int4 Src;
 	};
-
-	static size_t ComputeHash(std::string const& s)
-	{
-		const int hashSize = 501;
-		int sum = 0;
-		for (int k = 0; k < s.length(); k++)
-			sum = sum + int(s[k]);
-		return  sum % hashSize;
-	}
 	static std::map<int, AnimData> Load(std::string filePath)
 	{
-		
+		int index = 0;
+		std::map<std::string, std::map<int, AnimData>>::iterator it = AnimTexMap.find(filePath);
+		if (it != AnimTexMap.end())
+		{
+			return AnimTexMap[filePath];
+		}
+
 		std::map<int, AnimData> animMap;
 		std::ifstream inputStream(filePath.c_str());
 		std::string line = "";
@@ -75,37 +71,36 @@ public:
 			inputStream.close();
 			return std::map<int, AnimData>();
 		}
-		
+
 
 		std::getline(inputStream, line);
 		while (!inputStream.eof())
 		{
-
-			int endName = line.find(">");
+			size_t endName = line.find(">");
 			if (endName == -1)
 			{
 				//Logger::LogWarning("[Animation File: Invalid Format]");
 				inputStream.close();
 				return std::map<int, AnimData>();
 			}
-			
+
 			std::string name = line.substr(1, endName - 1);
-			Hash hash = ComputeHash(name);
-			animMap.insert(std::pair<int, AnimData>(hash, AnimData()));
-
-			
+			animMap.insert(std::pair<int, AnimData>(index, AnimData()));
 			std::getline(inputStream, line);
-			Int2 RC = GetVec2FromLine("RC", line);
+			int2 RC = GetVec2FromLine("RC", line);
 			std::getline(inputStream, line);
-			Int4 Rect = GetVec4FromLine("SRC", line);
+			int4 Rect = GetVec4FromLine("SRC", line);
 			std::getline(inputStream, line);
 
-			animMap[hash].RowsCols = Int2(RC.vx, RC.vy);
-			animMap[hash].Src = Rect;
+			animMap[index].RowsCols = int2(RC.x, RC.y);
+			animMap[index].Src = Rect;
+			index += 1;
 			if (line == "")break;
 		}
-		
+
 		inputStream.close();
+
+		AnimTexMap.insert(std::pair<std::string, std::map<int, AnimData>>(filePath, animMap));
 		return animMap;
 	}
 private:

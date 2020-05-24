@@ -4,7 +4,8 @@ Made by Robin Decock.
 Has a static function (std::map<int, AnimData> Load(std::string filePath);)
 this loads in the pointed at filepath
 and returns a map
-[Key]: Hash value of the chosen animationName.
+[Key]: Index value of animData(is visible in the spriteslicer next to the name)
+the .Anim file will also contain a generated enum that you can cast to an int, to get the right data out of the map.
 [Value]: AnimData:
 
 struct AnimData
@@ -28,13 +29,10 @@ which is a simple struct that contains:
 	SRC="100,65,68,16"
 	<....>
 	....
-}
 
-size_t ComputeHash(std::string const& s)
-{
-	const int hashSize = 501;
-	int sum = 0;
-	for (int k = 0; k < s.length(); k++)
-		sum = sum + int(s[k]);
-	return  sum % hashSize;
+	//GENERATED ENUM:
+	enum AnimType
+	{
+	AnimName1,AnimName2
+	}
 }
